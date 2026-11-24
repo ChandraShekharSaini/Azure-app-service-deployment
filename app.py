@@ -1,391 +1,581 @@
-from flask import Flask
+
+from flask import Flask, render_template_string
 import os
 
 app = Flask(__name__)
 
-# Enhanced CSS with vibrant block colors
-STYLE = """
+HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SoundWave | Music Streaming</title>
+
 <style>
-    body {
-        margin: 0;
-        font-family: 'Consolas', 'Segoe UI', monospace;
-        background: #0f172a;
-        color: #ffffff;
-        line-height: 1.6;
-    }
-    .navbar {
-        background: #1e293b;
-        padding: 15px;
-        text-align: center;
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        border-bottom: 2px solid #334155;
-    }
-    .navbar a {
-        color: #00e5ff;
-        margin: 0 20px;
-        text-decoration: none;
-        font-size: 18px;
-        font-weight: bold;
-    }
-    .navbar a:hover { color: #ffcc00; }
-    
-    .container { padding: 30px; max-width: 1100px; margin: auto; }
-    
-    .card {
-        background: rgba(30, 41, 59, 0.7);
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-        margin-bottom: 20px;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #09090f;
+    color: white;
+}
+
+/* Layout */
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    background: #11111b;
+    padding: 30px 20px;
+    position: fixed;
+    height: 100vh;
+}
+
+.logo {
+    font-size: 27px;
+    font-weight: bold;
+    color: #b794ff;
+    margin-bottom: 45px;
+}
+
+.logo span {
+    color: #fff;
+}
+
+.menu-title {
+    color: #77778b;
+    font-size: 12px;
+    margin: 25px 0 15px;
+    letter-spacing: 2px;
+}
+
+.sidebar a {
+    display: block;
+    padding: 13px;
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: #aaaabd;
+    border-radius: 9px;
+    transition: 0.3s;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+    background: #29213d;
+    color: #c5a5ff;
+}
+
+/* Main */
+.main {
+    margin-left: 240px;
+    width: calc(100% - 240px);
+    padding: 30px 40px 110px;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+    gap: 20px;
+}
+
+.search {
+    background: #191925;
+    border: 1px solid #29293b;
+    padding: 13px 20px;
+    border-radius: 30px;
+    color: white;
+    width: 320px;
+    outline: none;
+}
+
+.profile {
+    background: #29213d;
+    color: #d7bdff;
+    padding: 10px 18px;
+    border-radius: 25px;
+}
+
+/* Hero */
+.hero {
+    padding: 55px;
+    border-radius: 22px;
+    background: linear-gradient(120deg, #48217b, #9b4de0, #ed5a9d);
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero h1 {
+    font-size: 43px;
+    margin-bottom: 15px;
+}
+
+.hero p {
+    color: #eee0ff;
+    margin-bottom: 25px;
+}
+
+.hero button {
+    padding: 13px 30px;
+    border: none;
+    border-radius: 30px;
+    background: white;
+    color: #52218a;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Sections */
+.section {
+    margin-bottom: 40px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 22px;
+}
+
+.section-header h2 {
+    font-size: 23px;
+}
+
+.section-header a {
+    color: #b794ff;
+    text-decoration: none;
+}
+
+/* Cards */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 22px;
+}
+
+.card {
+    background: #151520;
+    padding: 15px;
+    border-radius: 15px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.card:hover {
+    background: #252238;
+    transform: translateY(-5px);
+}
+
+.cover {
+    height: 165px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 65px;
+}
+
+.cover1 { background: linear-gradient(135deg,#ff758c,#ff7eb3); }
+.cover2 { background: linear-gradient(135deg,#4776e6,#8e54e9); }
+.cover3 { background: linear-gradient(135deg,#11998e,#38ef7d); }
+.cover4 { background: linear-gradient(135deg,#f7971e,#ffd200); }
+.cover5 { background: linear-gradient(135deg,#654ea3,#eaafc8); }
+.cover6 { background: linear-gradient(135deg,#232526,#414345); }
+
+.card h3 {
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+.card p {
+    color: #89899d;
+    font-size: 13px;
+}
+
+/* Genres */
+.genres {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 15px;
+}
+
+.genre {
+    padding: 25px;
+    border-radius: 13px;
+    font-size: 19px;
+    font-weight: bold;
+    min-height: 90px;
+}
+
+.g1 { background: linear-gradient(120deg,#642b73,#c6426e); }
+.g2 { background: linear-gradient(120deg,#134e5e,#71b280); }
+.g3 { background: linear-gradient(120deg,#373b44,#4286f4); }
+.g4 { background: linear-gradient(120deg,#c31432,#240b36); }
+
+/* Player */
+.player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #181822;
+    border-top: 1px solid #30303c;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+.track {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 25%;
+}
+
+.track-art {
+    background: linear-gradient(135deg,#9b4de0,#ed5a9d);
+    width: 45px;
+    height: 45px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+}
+
+.track p {
+    font-size: 13px;
+    color: #999;
+}
+
+.controls {
+    text-align: center;
+}
+
+.controls button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 25px;
+    cursor: pointer;
+    margin: 0 12px;
+}
+
+.play {
+    background: #b794ff !important;
+    color: #111 !important;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+}
+
+.progress {
+    width: 250px;
+    height: 4px;
+    background: #444;
+    margin: 10px auto 0;
+    border-radius: 10px;
+}
+
+.progress div {
+    height: 100%;
+    width: 35%;
+    background: #b794ff;
+    border-radius: 10px;
+}
+
+@media(max-width: 800px) {
+    .sidebar {
+        width: 70px;
+        padding: 20px 8px;
     }
 
-    /* Color Coded Sections */
-    .block-header { border-left: 8px solid #ffcc00; background: #2d3748; padding: 15px; margin-top: 20px; }
-    .block-cloud { border-left: 8px solid #00e5ff; background: #1a365d; padding: 15px; margin-bottom: 10px; }
-    .block-devops { border-left: 8px solid #a78bfa; background: #2e1065; padding: 15px; margin-bottom: 10px; }
-    .block-automation { border-left: 8px solid #4ade80; background: #064e3b; padding: 15px; margin-bottom: 10px; }
-    .block-security { border-left: 8px solid #f87171; background: #450a0a; padding: 15px; margin-bottom: 10px; }
-
-    pre {
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        font-size: 15px;
-        color: #e2e8f0;
-        margin: 0;
+    .logo {
+        font-size: 17px;
     }
-    h1, h2 { margin-top: 0; }
-    .footer {
-        margin-top: 30px;
-        background: #0b0f19;
+
+    .sidebar a {
+        font-size: 0;
         text-align: center;
+    }
+
+    .main {
+        margin-left: 70px;
+        width: calc(100% - 70px);
         padding: 20px;
-        font-size: 14px;
-        color: #94a3b8;
     }
+
+    .hero {
+        padding: 30px 20px;
+    }
+
+    .hero h1 {
+        font-size: 30px;
+    }
+
+    .search {
+        width: 100%;
+    }
+
+    .navbar {
+        flex-wrap: wrap;
+    }
+
+    .track {
+        width: auto;
+    }
+
+    .progress {
+        width: 100px;
+    }
+}
 </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <div class="logo">♫ Sound<span>Wave</span></div>
+
+        <div class="menu-title">MENU</div>
+        <a href="/" class="active">⌂ Home</a>
+        <a href="#trending">♫ Trending</a>
+        <a href="#genres">◈ Explore</a>
+        <a href="#artists">♙ Artists</a>
+
+        <div class="menu-title">YOUR LIBRARY</div>
+        <a href="#recent">♡ Favorites</a>
+        <a href="#recent">▣ Playlists</a>
+        <a href="#recent">◷ Recently Played</a>
+    </aside>
+
+    <main class="main">
+
+        <nav class="navbar">
+            <input class="search" id="search"
+            placeholder="Search songs, artists, albums..."
+            oninput="searchMusic()">
+
+            <div class="profile">♫ Music Lover</div>
+        </nav>
+
+        <section class="hero">
+            <h1>Feel The Music.</h1>
+            <p>
+                Discover millions of songs. Find your rhythm.
+                Make every moment unforgettable.
+            </p>
+            <button onclick="playSong('Feel The Music')">
+                ▶ Start Listening
+            </button>
+        </section>
+
+        <section class="section" id="trending">
+            <div class="section-header">
+                <h2>🔥 Trending Albums</h2>
+                <a href="#trending">View All →</a>
+            </div>
+
+            <div class="cards">
+
+                <div class="card" data-name="Midnight Dreams"
+                onclick="playSong('Midnight Dreams')">
+                    <div class="cover cover1">🌙</div>
+                    <h3>Midnight Dreams</h3>
+                    <p>Various Artists</p>
+                </div>
+
+                <div class="card" data-name="Purple Sky"
+                onclick="playSong('Purple Sky')">
+                    <div class="cover cover2">🌌</div>
+                    <h3>Purple Sky</h3>
+                    <p>DJ Shadow</p>
+                </div>
+
+                <div class="card" data-name="Green Energy"
+                onclick="playSong('Green Energy')">
+                    <div class="cover cover3">🌿</div>
+                    <h3>Green Energy</h3>
+                    <p>Nature Beats</p>
+                </div>
+
+                <div class="card" data-name="Golden Hour"
+                onclick="playSong('Golden Hour')">
+                    <div class="cover cover4">☀️</div>
+                    <h3>Golden Hour</h3>
+                    <p>Sunset Music</p>
+                </div>
+
+                <div class="card" data-name="Love Stories"
+                onclick="playSong('Love Stories')">
+                    <div class="cover cover5">💜</div>
+                    <h3>Love Stories</h3>
+                    <p>Romantic Hits</p>
+                </div>
+
+                <div class="card" data-name="Dark Vibes"
+                onclick="playSong('Dark Vibes')">
+                    <div class="cover cover6">🎧</div>
+                    <h3>Dark Vibes</h3>
+                    <p>Night Beats</p>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="section" id="genres">
+            <div class="section-header">
+                <h2>Explore By Genre</h2>
+            </div>
+
+            <div class="genres">
+                <div class="genre g1">🎸 Pop Music</div>
+                <div class="genre g2">🎹 Classical</div>
+                <div class="genre g3">🎧 Electronic</div>
+                <div class="genre g4">🎤 Hip Hop</div>
+            </div>
+        </section>
+
+        <section class="section" id="artists">
+            <div class="section-header">
+                <h2>⭐ Popular Artists</h2>
+            </div>
+
+            <div class="cards">
+                <div class="card">
+                    <div class="cover cover2">🎤</div>
+                    <h3>Artist One</h3>
+                    <p>Popular Artist</p>
+                </div>
+
+                <div class="card">
+                    <div class="cover cover1">🎙️</div>
+                    <h3>Artist Two</h3>
+                    <p>Music Creator</p>
+                </div>
+
+                <div class="card">
+                    <div class="cover cover5">🎼</div>
+                    <h3>Artist Three</h3>
+                    <p>Singer & Songwriter</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="recent">
+            <div class="section-header">
+                <h2>Recently Played</h2>
+            </div>
+            <p style="color:#999">
+                Select an album to see it in the music player.
+            </p>
+        </section>
+
+    </main>
+
+</div>
+
+<!-- Music Player -->
+<div class="player">
+
+    <div class="track">
+        <div class="track-art">🎵</div>
+        <div>
+            <h4 id="songName">Select a Song</h4>
+            <p>SoundWave Playlist</p>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button onclick="previousSong()">⏮</button>
+        <button class="play" id="playBtn"
+        onclick="togglePlay()">▶</button>
+        <button onclick="nextSong()">⏭</button>
+        <div class="progress"><div id="progressBar"></div></div>
+    </div>
+
+    <div style="color:#b794ff">♫ SoundWave</div>
+
+</div>
+
+<script>
+const songs = [
+    "Midnight Dreams",
+    "Purple Sky",
+    "Green Energy",
+    "Golden Hour",
+    "Love Stories",
+    "Dark Vibes"
+];
+
+let currentIndex = -1;
+let isPlaying = false;
+
+function playSong(name) {
+    currentIndex = songs.indexOf(name);
+    document.getElementById("songName").innerText = name;
+    isPlaying = true;
+    document.getElementById("playBtn").innerText = "Ⅱ";
+}
+
+function togglePlay() {
+    if (currentIndex === -1) {
+        playSong(songs[0]);
+        return;
+    }
+
+    isPlaying = !isPlaying;
+    document.getElementById("playBtn").innerText =
+        isPlaying ? "Ⅱ" : "▶";
+}
+
+function nextSong() {
+    currentIndex = (currentIndex + 1) % songs.length;
+    playSong(songs[currentIndex]);
+}
+
+function previousSong() {
+    currentIndex = currentIndex <= 0
+        ? songs.length - 1 : currentIndex - 1;
+    playSong(songs[currentIndex]);
+}
+
+function searchMusic() {
+    const query = document.getElementById("search")
+        .value.toLowerCase();
+
+    document.querySelectorAll(".card[data-name]")
+        .forEach(card => {
+            card.style.display =
+                card.dataset.name.toLowerCase().includes(query)
+                ? "block" : "none";
+        });
+}
+</script>
+
+</body>
+</html>
 """
-
-def get_layout(title, content):
-    return f"""
-    <html>
-    <head>
-        <title>{title}</title>
-        {STYLE}
-    </head>
-    <body>
-
-        <div class="navbar">
-            <a href="/">Home</a>
-            <a href="/syllabus">syllabus</a>
-        </div>
-
-        <div class="container">
-            {content}
-        </div>
-
-        <div class="footer">
-            © 2026 Veera Sir – Naresh IT <br>
-            Multi-Cloud DevSecOps | AWS | Azure | GCP | Kubernetes | Terraform | Ansible
-        </div>
-
-    </body>
-    </html>
-    """
 
 @app.route("/")
 def home():
-    home_content = """
-    <div class="card">
-        <h1 style="color:#ffcc00;">Multi-Cloud DevOps FDE Training</h1>
-        <h2 style="color:#f87171;">By Veera Sir – Naresh IT</h2>
+    return render_template_string(HTML)
 
-        <p>
-            Welcome to the <b>industry-oriented Multi-Cloud DevOps Training</b> designed by
-            <b>Veera Sir</b> at <b>Naresh IT</b>.
-        </p>
-
-        <p>
-            Hands-on implementation, real production scenarios,
-            and end-to-end CI/CD pipelines.
-        </p>
-    </div>
-
-    <div class="card" style="background:#1a1a2e; color:#ffcc66; padding:20px; line-height:1.8; border-radius:12px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
-    <h2 style="color:#ffaa00; font-size:28px; margin-bottom:15px;">Real-Time DevOps Projects By veera Sir NareshIt</h2>
-    <ul style="list-style-type: square; padding-left: 20px; font-size:16px;">
-        <li>Multi-Tier Full-Stack Node.js Application Deployed on AWS Using 20+ Services with High Availability, Scalability, Networking, Security, and Monitoring</li>
-        <li>Cloud Deployment of a Scalable, Resilient Full-Stack Python Application on AWS EC2 with Disaster Recovery Strategy</li>
-        <li>Cloud-Native Deployment of a Full-Stack Java Spring Boot Application on Azure with High Availability and Disaster Recovery Strategy</li>
-        <li>Cloud-Native Deployment of a Full-Stack Node.js Application on GCP with High Availability, Scalability, Networking, Security</li>
-        <li>Automated Database Migration from EC2-Hosted MySQL to Amazon RDS Using AWS Database Migration Service (DMS) with Minimal Downtime and High Availability</li>
-        <li>End-to-End Application Migration from On-Premises Infrastructure to AWS Cloud with High Availability, Scalability, and Security Best Practices</li>
-        <li>Optimized Static Web Hosting Architecture on AWS S3 with CDN and Custom Domain</li>
-        <li>Implementing Automated Backup Strategies in AWS Cloud Using Serverless Lambda Functions</li>
-        <li>End-to-End CDN Optimization: Configuring CloudFront for Low Latency and Automating Cache Invalidation Using Lambda</li>
-        <li>Cloud-Native Full-Stack Application Deployment on AWS ECS Fargate with CI/CD, Auto Scaling, and Secure Networking</li>
-        <li>Unified Infrastructure Monitoring with Prometheus and Grafana: Centralized Dashboard for Multi-Server Observability</li>
-        <li>Centralized Logging with Amazon CloudWatch and Cost-Optimized Log Archival to S3 Using AWS Lambda serverless</li>
-        <li>End-to-End Automation of Multi-Tier AWS, Azure and GCP Cloud Infrastructure Using Terraform with Complete Networking, Security, and Deployment Layers</li>
-        <li>End-to-End Automation of Java Maven Application Deployment on Apache Tomcat Using CI/CD Practices</li>
-        <li>End-to-End Cloud-Native CI/CD Pipeline for Node.js Microservices with Jenkins and Kubernetes</li>
-        <li>End-to-End DevOps Automation for Node.js Microservices with GitLab CI/CD and Kubernetes (EKS)</li>
-        <li>End-to-End CI/CD Pipeline for Java Applications Using Azure DevOps, Docker, and Kubernetes AKS</li>
-        <li>End-to-End CI/CD Pipeline (GitLab CI/CD) for Java Applications Using Azure DevOps, Docker, and Kubernetes GKE</li>
-        <li>Full-Stack Microservices Application (Python, Java, Node.js) Deployment on AWS Using CI/CD, GitOps, Helm, and Centralized Monitoring with Prometheus, Grafana, and the EFK Stack</li>
-        <li>End-to-End Production-Grade EKS Cluster Deployment on AWS, Azure, and GCP Using Terraform with High Availability, Scalability, and Secure Networking</li>
-        <li>Fully Managed Serverless Full-Stack Deployment Using AWS Services (Lambda, API Gateway, DynamoDB)</li>
-        <li>End-to-End Patch Management and Monitoring Configuration Using Ansible</li>
-        <li>Containerized Full-Stack Application Deployment Using Docker & Docker Compose</li>
-        <li>Centralized Application Log Monitoring and Visualization on Amazon EKS Using the ELK Stack (Elasticsearch, Logstash, Kibana) for Enhanced Observability</li>
-        <li>Scalable Multi-Application Deployment on EC2 Using ALB Path-Based Routing</li>
-        <li>Enterprise Identity and Access Management Using AWS SSO</li>
-        <li>End-to-End CI/CD for Microservices on Amazon EKS Using Argo CD and GitHub Actions</li>
-        <li>End-to-End Kubernetes Application Deployment Using Ingress Controllers for High Availability, Load Balancing, and Traffic Management</li>
-    </ul>
-</div>
-
-
-    <div class="card">
-        <h2 style="color:#00e5ff;">Why Multi-Cloud DevOps?</h2>
-        <ul>
-            <li>Multiple cloud providers</li>
-            <li>High availability & vendor independence</li>
-            <li>Better cost optimization</li>
-            <li>Enterprise disaster recovery</li>
-            <li>Higher salaries</li>
-        </ul>
-    </div>
-
-    <div class="card">
-        <h2 style="color:#00ff99;">What You Will Learn</h2>
-        <ul>
-            <li>AWS, Azure & GCP</li>
-            <li>Linux & Shell scripting</li>
-            <li>CI/CD pipelines</li>
-            <li>Docker & Kubernetes</li>
-            <li>Terraform & Ansible</li>
-            <li>GitOps & Automation</li>
-        </ul>
-    </div>
-
-
-    <div class="card">
-        <h2 style="color:#ff6699;">Why Naresh IT & Veera Sir?</h2>
-        <ul>
-            <li>14+ years excellence</li>
-            <li>Real-time trainer</li>
-            <li>Interview focused</li>
-            <li>Mock interviews</li>
-        </ul>
-    </div>
-    """
-
-    # Pass the home_content to get_layout
-    return get_layout("Home", home_content)
-
-
-@app.route("/syllabus")
-def syllabus():
-    content = f"""
-    <h1 style="color:#ffcc00; text-align:center;">Complete Course Syllabus</h1>
-    
-    <div class="block-header">
-        <h2 style="color:#ffcc00;">Modules Overview (1-35)</h2>
-        <pre>
-● Module 01:  Aws,Azure And Gcp Cloud Overview  
-● Module 02:  Linux Introduction  
-● Module 03:  AWS Elastic Compute Cloud (ec2)  
-● Module 04:  Azure Virtual Machine (VM) 
-● Module 05:  GCP Compute Engine 
-● Module 06:  AWS Virtual Private Cloud (VPC)  
-● Module 07:  Azure Virtual Network (VNET)  
-● Module 08:  GCP Cloud Virtual Network 
-● Module 09:  AWS S3 Storage Service 
-● Module 10:  Azure Blob Storage  
-● Module 11:  GCP Cloud Storage  
-● Module 12:  Identity and Access Management 
-● Module 13: Amazon Relational Database and DynamoDB  
-● Module 14: Security Services 
-● Module 15: Serverless service lambda 
-● Module 16: Amazon Route 53 
-● Module 17: Overview Of Devops 
-● Module 18: Shell scripting  
-● Module 19: Web App Servers Configurations 
-● Module 20: Version Control with Git 
-● Module 21: Build tool Maven 
-● Module 22: SonarQube Overview 
-● Module 23: Continuous Integration – Jenkins 
-● Module 24: Azure CICD 
-● Module 25: Git Lab CICD 
-● Module 26: Docker 
-● Module 27: Orchestration using Kubernetes 
-● Module 28: Azure Kubernetes Service (AKS) 
-● Module 29: Overview of Argo CD   
-● Module 30: Continuous Monitoring with Grafana 
-● Module 31: Ansible 
-● Module 32: Terraform 
-● Module 33: Python Boto3 
-● Module 34: Project to cover all Tools 
-● Module 35: Resume Preparation
-        </pre>
-    </div>
-
-    <div class="block-cloud">
-        <h2 style="color:#00e5ff;">Section 1: Cloud Foundational Concepts</h2>
-        <pre>
-1. Introduction to Cloud Computing 
-• What is Cloud Computing? 
-• Evolution and importance of cloud technology 
-• Key players in the market: AWS, Azure, GCP 
-
-2. Why Cloud Computing? 
-• Traditional infrastructure vs. cloud infrastructure 
-• Benefits of moving to the cloud for businesses 
-• Use cases across industries: startups, enterprises, etc. 
-
-3. Benefits of Cloud Computing 
-• Cost Efficiency, Scalability, Elasticity, Flexibility
-• Disaster Recovery and Business Continuity 
-• Global Accessibility and High Availability 
-• Automated Infrastructure Management (AI/ML) 
-
-4. Types of Cloud Computing 
-• Public Cloud (AWS, Azure, GCP) 
-• Private Cloud & Hybrid Cloud
-• Community Cloud
-
-5. Cloud Service Models 
-• SaaS: Software as a Service (Gmail, Salesforce) 
-• PaaS: Platform as a Service (Beanstalk, App Service) 
-• IaaS: Infrastructure as a Service (EC2, VM, GCE) 
-
-6. Scaling & Issues
-• Horizontal vs Vertical Scaling 
-• Vendor Lock-In, Downtime, Data Privacy
-• Cloud Costing Models: Pay-as-you-go vs Reserved
-        </pre>
-    </div>
-
-    <div class="block-automation">
-        <h2 style="color:#4ade80;">Section 2: Virtualization & Linux</h2>
-        <pre>
-2. Virtualization 
-• Virtualization and cloud computing    
-• Types of virtualization & Hypervisor Concepts 
-• Vendors & Benefits
-
-3. Linux           
-• Important Linux commands & filesystem
-• File permissions & Process management 
-• User account & Software management  
-• Networking in Linux 
-        </pre>
-    </div>
-
-    <div class="block-cloud">
-        <h2 style="color:#00e5ff;">Section 3: Multi-Cloud Compute & Networking</h2>
-        <pre>
-AWS EC2, Azure VM, GCP Compute Engine 
-• Instance launch (Windows & Linux) 
-• Key pair management & Security groups / NSG / Firewall 
-• Storage, snapshots, User data, and metadata 
-• Load balancers & Auto scaling (Fixed/Dynamic)
-• AWS CLI and IAM roles 
-
-Networking (AWS VPC, Azure VNET, GCP Network) 
-• IP addressing & CIDR 
-• Subnets & Route tables 
-• Internet Gateway & Network ACLs 
-
-Storage Services 
-• S3, Blob Storage, Cloud Storage 
-• Versioning & Lifecycle management 
-• Static website hosting & Cross-region replication 
-        </pre>
-    </div>
-
-    <div class="block-security">
-        <h2 style="color:#f87171;">Section 4: Security, Databases & Serverless</h2>
-        <pre>
-IAM & Security
-• Root vs IAM, MFA, Password policies 
-• Roles, Groups, and Custom policies 
-• Secrets Manager, KMS, ACM, WAF, Shield, CloudTrail 
-
-Databases 
-• RDS (MySQL, MSSQL, Aurora) 
-• Multi-AZ & Read Replicas 
-• DynamoDB & Migration service 
-
-AWS Lambda 
-• Boto3 automation & Environment configuration 
-• Layers & Limitations 
-
-Route 53 
-• DNS Records & Routing policies (Failover, Latency, Geo)
-        </pre>
-    </div>
-
-    <div class="block-devops">
-        <h2 style="color:#a78bfa;">Section 5: DevOps Tools & CI/CD</h2>
-        <pre>
-DevOps Overview 
-• DevOps pipeline & ecosystem 
-
-Shell Scripting 
-• Variables, Operators, Conditions, Loops, Functions 
-
-Web Servers 
-• Apache & Tomcat configuration and deployment 
-
-CI/CD Tools
-• Git: Branching, Merging, Rebase, Remote Repos
-• Maven: POM, Lifecycle, Dependencies
-• SonarQube: Code scan & Maven integration
-• Jenkins: Master-slave, Plugins, Jobs
-• Azure CICD & Git Lab CICD
-        </pre>
-    </div>
-
-    <div class="block-devops">
-        <h2 style="color:#a78bfa;">Section 6: Containers & Orchestration</h2>
-        <pre>
-Docker 
-• Images, Containers, Dockerfile 
-• Docker Compose & Docker Swarm 
-
-Kubernetes 
-• Architecture, Deployments, Services 
-• Helm Charts & RBAC 
-• AKS / EKS integration 
-• EFK Stack (Logs)
-• Argo CD (GitOps & Continuous Delivery) 
-• Grafana & Prometheus (Monitoring)
-        </pre>
-    </div>
-
-    <div class="block-automation">
-        <h2 style="color:#4ade80;">Section 7: Infrastructure as Code & Final</h2>
-        <pre>
-Ansible 
-• Inventory, Playbooks, Roles, Modules 
-
-Terraform 
-• Providers, Resources, State, Modules 
-• AWS labs & Best practices 
-
-Python Boto3 
-• AWS automation with Python 
-
-Final Project 
-• End-to-end DevOps project 
-• Resume preparation & Mock interviews 
-        </pre>
-    </div>
-    """
-    return get_layout("Complete Course Syllabus", content)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
